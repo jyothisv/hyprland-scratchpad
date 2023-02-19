@@ -20,13 +20,17 @@ fn main() -> hyprland::shared::HResult<()> {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 3 {
-        eprintln!("Syntax: {} workspace-name command-name", args[0]);
+        eprintln!(
+            "Syntax: {} workspace-name command-name [command-args ...]",
+            args[0]
+        );
         exit(1);
     }
 
+    let full_command_name = &args[2..].join(" ");
+
     let workspace_name = format!("{}", &args[1]);
     let full_workspace_name = format!("special:{workspace_name}");
-    let command_name = &args[2];
 
     // All open windows as a vector
     let workspaces = Workspaces::get()?.to_vec();
@@ -45,9 +49,7 @@ fn main() -> hyprland::shared::HResult<()> {
 
     hyprland::dispatch!(
         Exec,
-        &format!(
-            "[workspace {full_workspace_name} silent] foot -T {workspace_name} -a {workspace_name} {command_name}"
-        )
+        &format!("[workspace {full_workspace_name} silent] {full_command_name}")
     )?;
 
     let mut event_listener = EventListener::new();
