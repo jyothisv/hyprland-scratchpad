@@ -8,6 +8,14 @@ use hyprland::prelude::*;
 
 use hyprland::data::Workspaces;
 
+fn toggle_workspace_or_exit(ws: &str) {
+    let res = hyprland::dispatch!(ToggleSpecialWorkspace, Some(ws.to_string()));
+    match res {
+        Ok(_) => exit(0),
+        Err(_) => exit(1),
+    }
+}
+
 fn main() -> hyprland::shared::HResult<()> {
     let args: Vec<String> = env::args().collect();
 
@@ -31,9 +39,8 @@ fn main() -> hyprland::shared::HResult<()> {
         .any(|workspace| workspace.name == full_workspace_name);
 
     if has_workspace {
-        // We can't do anything with hyprland version 0.3.0. Exit!
-        // TODO: Toggle the special workspace
-        exit(0);
+        // Toggle workspace
+        toggle_workspace_or_exit(&workspace_name);
     }
 
     hyprland::dispatch!(
@@ -45,10 +52,10 @@ fn main() -> hyprland::shared::HResult<()> {
 
     let mut event_listener = EventListener::new();
     event_listener.add_workspace_added_handler(move |data| {
-        if let hyprland::shared::WorkspaceType::Special(Some(x)) = data {
-            if x == workspace_name {
-                // TODO: toggle the special workspace
-                exit(0);
+        if let hyprland::shared::WorkspaceType::Special(Some(ws)) = data {
+            if ws == workspace_name {
+                // Toggle workspace
+                toggle_workspace_or_exit(&workspace_name);
             }
         }
     });
