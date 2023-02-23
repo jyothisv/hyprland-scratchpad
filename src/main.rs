@@ -1,12 +1,16 @@
 use std::env;
 use std::process::exit;
 
+use hyprland::async_closure;
 use hyprland::dispatch::*;
-use hyprland::event_listener::EventListener;
+use hyprland::event_listener::AsyncEventListener;
 
 use hyprland::prelude::*;
 
 use hyprland::data::Workspaces;
+
+use std::time::Duration;
+use tokio::time::timeout;
 
 fn toggle_workspace_or_exit(ws: &str) {
     let res = hyprland::dispatch!(ToggleSpecialWorkspace, Some(ws.to_string()));
@@ -16,7 +20,8 @@ fn toggle_workspace_or_exit(ws: &str) {
     }
 }
 
-fn main() -> hyprland::shared::HResult<()> {
+#[tokio::main]
+async fn main() -> hyprland::shared::HResult<()> {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 3 {
@@ -29,7 +34,7 @@ fn main() -> hyprland::shared::HResult<()> {
 
     let full_command_name = &args[2..].join(" ");
 
-    let workspace_name = format!("{}", &args[1]);
+    let workspace_name: &'static str = Box::leak(Box::new(args[1].clone()));
     let full_workspace_name = format!("special:{workspace_name}");
 
     // All open windows as a vector
@@ -52,15 +57,19 @@ fn main() -> hyprland::shared::HResult<()> {
         &format!("[workspace {full_workspace_name} silent] {full_command_name}")
     )?;
 
-    let mut event_listener = EventListener::new();
-    event_listener.add_workspace_added_handler(move |data| {
+    let mut event_listener = AsyncEventListener::new();
+    event_listener.add_workspace_added_handler(async_closure! { move |data| {
         if let hyprland::shared::WorkspaceType::Special(Some(ws)) = data {
             if ws == workspace_name {
                 // Toggle workspace
                 toggle_workspace_or_exit(&workspace_name);
             }
         }
-    });
+    }});
 
-    event_listener.start_listener()
+    let event_listener_future = event_listener.start_listener_async();
+
+    timeout(Duration::from_millis(2000), event_listener_future)
+        .await
+        .expect("Timed out!")
 }

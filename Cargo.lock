@@ -217,6 +217,7 @@ name = "hyprland_scratchpad"
 version = "0.1.0"
 dependencies = [
  "hyprland",
+ "tokio",
 ]
 
 [[package]]

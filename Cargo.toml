@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 hyprland = { git = "https://github.com/hyprland-community/hyprland-rs" }
+tokio = "1.25"
