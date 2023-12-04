@@ -21,7 +21,7 @@ fn toggle_workspace_or_exit(ws: &str) {
 }
 
 #[tokio::main]
-async fn main() -> hyprland::shared::HResult<()> {
+async fn main() -> hyprland::Result<()> {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 3 {
