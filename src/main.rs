@@ -55,7 +55,7 @@ async fn main() -> hyprland::Result<()> {
     hyprland::dispatch!(
         async;
         Exec,
-        &format!("[workspace {full_workspace_name} silent] {full_command_name}")
+        &format!("[workspace {full_workspace_name} silent;float;stayfocused;noanim] {full_command_name}")
     )
     .await?;
 
