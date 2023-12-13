@@ -53,9 +53,11 @@ async fn main() -> hyprland::Result<()> {
     }
 
     hyprland::dispatch!(
+        async;
         Exec,
         &format!("[workspace {full_workspace_name} silent] {full_command_name}")
-    )?;
+    )
+    .await?;
 
     let mut event_listener = AsyncEventListener::new();
     event_listener.add_workspace_added_handler(async_closure! { move |data| {
